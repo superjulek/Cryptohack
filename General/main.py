@@ -1,9 +1,9 @@
 import base64
 from Crypto.Util.number import *
-
-
-def main():
-    test4()
+from pwn import *
+import json
+import codecs
+import imageio
 
 
 def test1():
@@ -30,6 +30,142 @@ def test4():
     b = long_to_bytes(i)
     for c in b:
         print(chr(c), end='')
+
+
+def test5():
+    r = remote('socket.cryptohack.org', 13377, level='debug')
+
+    def json_recv():
+        return json.loads(r.recvline().decode())
+
+    def json_send(hsh):
+        r.sendline(json.dumps(hsh).encode())
+
+    def decode(encoding, data):
+        if encoding == "base64":
+            decoded = base64.b64decode(data.encode()).decode()
+        elif encoding == "hex":
+            decoded = bytes.fromhex(data).decode()
+        elif encoding == "rot13":
+            decoded = codecs.decode(data, 'rot_13')
+        elif encoding == "bigint":
+            decoded = bytes.fromhex(data.split('x')[1]).decode()
+        elif encoding == "utf-8":
+            decoded = ''.join([chr(b) for b in data])
+        else:
+            raise Exception('Unknown encoding')
+        return decoded
+
+    while True:
+        received = json_recv()
+
+        print("Received type: ")
+        print(received["type"])
+        print("Received encoded value: ")
+        print(received["encoded"])
+
+        to_send = {
+            "decoded": decode(received["type"], received["encoded"])
+        }
+        json_send(to_send)
+
+
+def test6():
+    s = 'label'
+    print(''.join([chr(xor(ord(c), 13)[0]) for c in s]))
+
+
+def test7():
+    KEY1 = 'a6c8b6733c9b22de7bc0253266a3867df55acde8635e19c73313'
+    KEY2KEY1 = '37dcb292030faa90d07eec17e3b1c6d8daf94c35d4c9191a5e1e'
+    KEY2KEY3 = 'c1545756687e7573db23aa1c3452a098b71a7fbf0fddddde5fc1'
+    FLAGKEY1KEY3KEY2 = '04ee9855208a2cd59091d04767ae47963170d1660df7f56f5faf'
+
+    print(xor(bytes.fromhex(FLAGKEY1KEY3KEY2), bytes.fromhex(KEY1), bytes.fromhex(KEY2KEY3)))
+
+
+def test8():
+    s = '73626960647f6b206821204f21254f7d694f7624662065622127234f726927756d'
+    for i in range(255):
+        print(xor(bytes.fromhex(s), i))
+
+
+def test9():
+    s = '0e0b213f26041e480b26217f27342e175d0e070a3c5b103e2526217f27342e175d0e077e263451150104'
+    print(xor(bytes.fromhex(s), 'crypto{'.encode()))
+    print(xor(bytes.fromhex(s), 'myXORkey'.encode()))
+
+
+def test10():
+    import cv2
+
+    # Read two images. The size of both images must be the same.
+    img1 = cv2.imread('lemur.png')
+    img2 = cv2.imread('flag.png')
+
+    # compute bitwise XOR on both images
+    xor_img = cv2.bitwise_xor(img1, img2)
+
+    # display the computed bitwise XOR image
+    cv2.imshow('Bitwise XOR Image', xor_img)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
+def test11():
+    a = 52920
+    b = 66528
+
+    h = a if a > b else b
+    l = a + b - h
+    while l != 0:
+        t = h - l * int(h/l)
+        if t > l:
+            h = t
+        else:
+            h = l
+            l = t
+    print(h)
+
+
+def test12():
+    a = 26513
+    b = 32321
+
+    h = a if a > b else b
+    l = a + b - h
+    n = h
+    m = l
+    p = [0, 1]
+    q = []
+    while l != 0:
+        q.append(int(h/l))
+        if len(q) > 2:
+            p.append((p[-2] + - p[-1] * q[-3]) % n)
+        t = h - l * q[-1]
+        if t > l:
+            h = t
+        else:
+            h = l
+            l = t
+    q.append(0)
+    p.append((p[-2] + - p[-1] * q[-3]) % n)
+    print(h)
+    print(p)
+    print(q)
+    u = p[-1]
+    v = int((m * u - 1) / n)
+    print(u)
+    print(-v)
+
+
+def test13():
+    print(11 % 6)
+    print(8146798528947 % 17)
+
+
+def main():
+    test13()
 
 
 if __name__ == '__main__':
