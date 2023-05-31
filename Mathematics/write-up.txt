@@ -1,0 +1,42 @@
+"Roll your Own (18)":
+
+DLP: 2.2 z "An Introduction to Mathematical Cryptography" (tylko opis problemu, nie znalazłem poniższej metody)
+
+1. Dane:
+
+Serwer:
+q - l. pierwsza 512 bit
+x - klucz prywatny (2, q)
+Klient:
+g, n - wybieramy tak, że g**q % n == 1
+Serwer
+h - klucz publiczny = g**x % n
+
+x = log g (h)
+
+2. Jak uzyskać g, n żeby g**q % n == 1?
+
+3. Pierwszy pomysł:
+- n wybieramy dowolnie
+- Niech g = n + 1
+- Wówczas po rozpisaniu wzoru skróconego mnożenia będzie tylko jeden wyraz niepodzielny przez n:
+ g ** q % n = [(n + 1) ** q]%n = [n**q + q * n**(q-1) * 1 + ... + q * n * 1 + 1]%n = 1
+- W tym przypadku jednak zawsze klucz publiczny będzie także 1
+- Należy zatem znaleźć sposób, który spełnia warunek ale nie dla dowolnego q, tylko q jakoś powiązanego z n i q
+- We wzorze skróconego mnożenia można zauważyć, że przedostatni wyraz zawiera iloczyn n i q (z trójkąta Pascala)
+- Powyższy fakt można wykorzystać narzucając wymóg na podzielność przez potęgę q
+- Powyższy warunek będzie spełniony, gdy g będzie powiązane z q (q + 1 zapewni resztę 1 i przedostatni wyraz podzielny przez q**2)
+
+4. Drugi pomysł:
+- n = q**2
+- g = q + 1
+- Wówczas po rozpisaniu wzoru skróconego mnożenia będzie tylko jeden wyraz niepodzielny przez n:
+ g ** q % n = [(q + 1) ** q]%(q**2) = [q**q + q * q**(q-1) * 1 + ... + q * q * 1 + 1]%(q**2) = 1
+- Powyższe jest spełnione dlatego, że istnieje relacja między g, n i q
+- Dla innego wykładnika (klucza prywatnego) spodziewany jest inny rezultat, co da nadzieję na odnalezienie go
+- Sprawdźmy:
+ g ** x % n = [(q + 1) ** x]%(q**2) = [q**x + x * q**(x-1) * 1 + ... + ? * q**2 * 1 + x * q * 1 + 1]%(q**2) =
+ = [x * q + 1] % (q**2) = h
+- Wygląda, że wówczas da się obliczyć klucz prywatny (x < q -> x * q + 1 < g**2):
+ [x * q + 1] % (q**2) = h -> x * q = 1 = h
+x = (h - 1) / q

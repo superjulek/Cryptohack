@@ -1,0 +1,331 @@
+import random
+
+from Crypto.Util.number import bytes_to_long, isPrime
+
+
+def test1():
+    from Crypto.Util.number import inverse
+    print(inverse(209, 991))
+
+
+def test2():
+    p = 28151
+    for i in range(1, p):
+        a = i
+        l = []
+        while a not in l:
+            l.append(a)
+            a = (a*i)%p
+        print(len(l))
+        if len(l) == p - 1:
+            print(f'Found: {i}')
+            break
+
+
+def test3():
+    g = 2
+    p = 2410312426921032588552076022197566074856950548502459942654116941958108831682612228890093858261341614673227141477904012196503648957050582631942730706805009223062734745341073406696246014589361659774041027169249453200378729434170325843778659198143763193776859869524088940195577346119843545301547043747207749969763750084308926339295559968882457872412993810129130294592999947926365264059284647209730384947211681434464714438488520940127459844288859336526896320919633919
+    a = 972107443837033796245864316200458246846904598488981605856765890478853088246897345487328491037710219222038930943365848626194109830309179393018216763327572120124760140018038673999837643377590434413866611132403979547150659053897355593394492586978400044375465657296027592948349589216415363722668361328689588996541370097559090335137676411595949335857341797148926151694299575970292809805314431447043469447485957669949989090202320234337890323293401862304986599884732815
+
+    print(pow(g, a, p))
+
+
+def test4():
+    g = 2
+    p = 2410312426921032588552076022197566074856950548502459942654116941958108831682612228890093858261341614673227141477904012196503648957050582631942730706805009223062734745341073406696246014589361659774041027169249453200378729434170325843778659198143763193776859869524088940195577346119843545301547043747207749969763750084308926339295559968882457872412993810129130294592999947926365264059284647209730384947211681434464714438488520940127459844288859336526896320919633919
+    A = 70249943217595468278554541264975482909289174351516133994495821400710625291840101960595720462672604202133493023241393916394629829526272643847352371534839862030410331485087487331809285533195024369287293217083414424096866925845838641840923193480821332056735592483730921055532222505605661664236182285229504265881752580410194731633895345823963910901731715743835775619780738974844840425579683385344491015955892106904647602049559477279345982530488299847663103078045601
+    b = 12019233252903990344598522535774963020395770409445296724034378433497976840167805970589960962221948290951873387728102115996831454482299243226839490999713763440412177965861508773420532266484619126710566414914227560103715336696193210379850575047730388378348266180934946139100479831339835896583443691529372703954589071507717917136906770122077739814262298488662138085608736103418601750861698417340264213867753834679359191427098195887112064503104510489610448294420720
+    B = 518386956790041579928056815914221837599234551655144585133414727838977145777213383018096662516814302583841858901021822273505120728451788412967971809038854090670743265187138208169355155411883063541881209288967735684152473260687799664130956969450297407027926009182761627800181901721840557870828019840218548188487260441829333603432714023447029942863076979487889569452186257333512355724725941390498966546682790608125613166744820307691068563387354936732643569654017172
+
+    print(pow(A, b, p))
+
+
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad, unpad
+import hashlib
+import json
+
+def json_recv(r):
+    return json.loads(r.recvline().decode())
+
+def json_send(r, hsh):
+    r.sendline(json.dumps(hsh).encode())
+
+def is_pkcs7_padded(message):
+    padding = message[-message[-1]:]
+    return all(padding[i] == len(padding) for i in range(0, len(padding)))
+
+def decrypt_flag(shared_secret: int, iv: str, ciphertext: str):
+    # Derive AES key from shared secret
+    sha1 = hashlib.sha1()
+    sha1.update(str(shared_secret).encode('ascii'))
+    key = sha1.digest()[:16]
+    # Decrypt flag
+    ciphertext = bytes.fromhex(ciphertext)
+    iv = bytes.fromhex(iv)
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    plaintext = cipher.decrypt(ciphertext)
+
+    if is_pkcs7_padded(plaintext):
+        return unpad(plaintext, 16).decode('ascii')
+    else:
+        return plaintext.decode('ascii')
+
+
+def test5():
+    g = 2
+    p = 2410312426921032588552076022197566074856950548502459942654116941958108831682612228890093858261341614673227141477904012196503648957050582631942730706805009223062734745341073406696246014589361659774041027169249453200378729434170325843778659198143763193776859869524088940195577346119843545301547043747207749969763750084308926339295559968882457872412993810129130294592999947926365264059284647209730384947211681434464714438488520940127459844288859336526896320919633919
+    A = 112218739139542908880564359534373424013016249772931962692237907571990334483528877513809272625610512061159061737608547288558662879685086684299624481742865016924065000555267977830144740364467977206555914781236397216033805882207640219686011643468275165718132888489024688846101943642459655423609111976363316080620471928236879737944217503462265615774774318986375878440978819238346077908864116156831874695817477772477121232820827728424890845769152726027520772901423784
+    b = 197395083814907028991785772714920885908249341925650951555219049411298436217190605190824934787336279228785809783531814507661385111220639329358048196339626065676869119737979175531770768861808581110311903548567424039264485661330995221907803300824165469977099494284722831845653985392791480264712091293580274947132480402319812110462641143884577706335859190668240694680261160210609506891842793868297672619625924001403035676872189455767944077542198064499486164431451944
+    B = 1241972460522075344783337556660700537760331108332735677863862813666578639518899293226399921252049655031563612905395145236854443334774555982204857895716383215705498970395379526698761468932147200650513626028263449605755661189525521343142979265044068409405667549241125597387173006460145379759986272191990675988873894208956851773331039747840312455221354589910726982819203421992729738296452820365553759182547255998984882158393688119629609067647494762616719047466973581
+
+    iv = '737561146ff8194f45290f5766ed6aba'
+    enc = '39c99bf2f0c14678d6a5416faef954b5893c316fc3c48622ba1fd6a9fe85f3dc72a29c394cf4bc8aff6a7b21cae8e12c'
+
+    ss = pow(A, b, p)
+
+    print(decrypt_flag(ss, iv, enc))
+
+
+def test6():
+    from pwn import remote
+    from Crypto.Util.number import bytes_to_long
+
+
+
+    eve = 197395083814907028991785772714920885908249341925650951555219049411298436217190605190824934787336279228785809783531814507661385111220639329358048196339626065676869119737979175531770768861808581110311903548567424039264485661330995221907803300824165469977099494284722831845653985392791480264712091293580274947132480402319812110462641143884577706335859190668240694680261160210609506891842793868297672619625924001403035676872189455767944077542198064499486164431451944
+
+
+    r = remote('socket.cryptohack.org', 13371, level='debug')
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    a = json_recv(r)
+    print(a)
+    json_send(r, a)  # to bob
+    pa = bytes_to_long(bytes.fromhex(a['p'][2:]))
+    ga = bytes_to_long(bytes.fromhex(a['g'][2:]))
+    Aa = bytes_to_long(bytes.fromhex(a['A'][2:]))
+    ss = pow(Aa, eve, pa)
+    print(r.recvuntil(b'Intercepted from Bob: '))
+    b = json_recv(r)
+    print(b)
+    json_send(r, {'B': hex(pow(ga, eve, pa))})  # to alice
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    enc = json_recv(r)
+    print(enc)
+    print(decrypt_flag(ss, enc['iv'], enc['encrypted_flag']))
+
+
+def test7():
+    from pwn import remote
+    from sympy.ntheory import discrete_log
+    r = remote('socket.cryptohack.org', 13379, level='debug')
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    print(json_recv(r))
+    print(r.recvuntil(b'Send to Bob: '))
+    json_send(r, {'supported': ['DH64']})
+    print(r.recvuntil(b'Send to Alice: '))
+    json_send(r, {'chosen': 'DH64'})
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    print(a := json_recv(r))
+    print(r.recvuntil(b'Intercepted from Bob: '))
+    print(b := json_recv(r))
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    print(enc := json_recv(r))
+    # print(r.recvall())
+
+    pa = bytes_to_long(bytes.fromhex(a['p'][2:]))
+    ga = 2  # bytes_to_long(bytes.fromhex(a['g'][2:]))
+    A = bytes_to_long(bytes.fromhex(a['A'][2:]))
+    B = bytes_to_long(bytes.fromhex(b['B'][2:]))
+    iv = enc['iv']
+    flag_enc = enc['encrypted_flag']
+    print(a := discrete_log(pa, A, ga))
+    ss = pow(B, a, pa)
+    print(decrypt_flag(ss, iv, flag_enc))
+
+
+def test8():
+    from pwn import remote
+    import gmpy2
+    from sympy.ntheory import discrete_log
+
+
+    e = 197395083814907028991785772714920885908249341925650951555219049411298436217190605190824934787336279228785809783531814507661385111220639329358048196339626065676869119737979175531770768861808581110311903548567424039264485661330995221907803300824165469977099494284722831845653985392791480264712091293580274947132480402319812110462641143884577706335859190668240694680261160210609506891842793868297672619625924001403035676872189455767944077542198064499486164431451944
+    g = 2
+    p = 0xffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a637ed6b0bff5cb6f406b7edee386bfb5a899fa5ae9f24117c4b1fe649286651ece45b3dc2007cb8a163bf0598da48361c55d39a69163fa8fd24cf5f83655d23dca3ad961c62f356208552bb9ed529077096966d670c354e4abc9804f1746c08ca237327ffffffffffffffff
+
+
+    r = remote('socket.cryptohack.org', 13373, level='debug')
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    print(A := json_recv(r))
+    print(r.recvuntil(b'Intercepted from Bob: '))
+    print(B := json_recv(r))
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    print(enc_a := json_recv(r))
+    print(r.recvuntil(b'Bob connects to you, send him some parameters: '))
+    g = int(A['g'][2:], 16)
+    p = int(A['p'][2:], 16)
+
+    #q = 0xb7d3ff2917652661190ee6ba8d706956ab512af630a111e3b3df3ff42b3e0bbeb8876b004c98c7f1b50301bcd6109f16fb30177f3ba7bf78d08ec1ff9e162e99
+    #q = random.getrandbits(192)
+    #g2 = q + 1
+    #p2 = q*q
+    # zmiana generatora zdaje się powodować zmianę generowanego b... trzeba inaczej
+
+    # Próba z pozostawionym generatorem 2, ale inną liczbą pierwszą:
+    # https://pl.wikipedia.org/wiki/Redukcja_Pohliga-Hellmana
+    # p musi mieć małe liczby pierwsze w rozkładzie (ale rzędu około 192 bajtów)
+    g2 = g
+    p2 = 11**500
+    E = pow(g2, e, p2)
+    json_send(r, {'p': hex(p2), 'g': hex(g2), 'A': hex(E)})
+    print(r.recvuntil(b'Bob says to you: '))
+    print(B2 := json_recv(r))  # to samo B...
+    print(r.recvuntil(b'Bob says to you: '))
+    print(enc_b := json_recv(r))
+    ss_be = pow(int(B2['B'], 16), e, p2)
+    print(decrypt_flag(ss_be, enc_b['iv'], enc_b['encrypted']))
+    #b = (int(B2['B'], 16) - 1) // q
+    b = discrete_log(p2, int(B2['B'], 16), g2)
+    print(f'b {hex(b)}')
+    print(f'B1 {hex(pow(g, b, p))}')
+    print(f'B2 {hex(pow(g2, b, p2))}')
+    ss_ab = pow(int(A['A'][2:], 16), b, p)
+    try:
+        print(decrypt_flag(ss_ab, enc_a['iv'], enc_a['encrypted']))
+    except:
+        pass
+    print(r.recvall())
+
+
+def test9():
+    # p = 2q + 1
+    # q nie ma dużych dzielników pierwszych
+    # https://crypto.stackexchange.com/questions/76323/what-does-it-mean-for-a-number-to-be-in-the-order-of-a-prime-number
+    from pwn import remote
+    from Crypto.Util.number import inverse
+    r = remote('socket.cryptohack.org', 13380, level='debug')
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    print(A := json_recv(r))
+    print(r.recvuntil(b'Intercepted from Bob: '))
+    print(B := json_recv(r))
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    print(enc_a := json_recv(r))
+    print(g := int(A['g'], 16))
+    print(p := int(A['p'], 16))
+    print(a := int(A['A'], 16) * inverse(g, p))
+    print(b := int(B['B'], 16) * inverse(g, p))
+    ss_ab = (a * b * g) % p
+    print(decrypt_flag(ss_ab, enc_a['iv'], enc_a['encrypted']))
+
+
+def gen_weak_prime():
+    primes = [i for i in range(3, 100) if isPrime(i)]
+    while True:
+        val = 1
+        while val < 11**500:
+            val *= random.choice(primes)
+        p = 2 * val + 1
+        if isPrime(p):
+            print(p)
+            break
+    return p
+
+
+def test10():
+    from pwn import remote
+    from sympy.ntheory import discrete_log
+    r = remote('socket.cryptohack.org', 13378, level='debug')
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    print(A := json_recv(r))
+    print(r.recvuntil(b'Intercepted from Bob: '))
+    print(B := json_recv(r))
+    print(r.recvuntil(b'Intercepted from Alice: '))
+    print(enc_a := json_recv(r))
+    print(r.recvuntil(b'Bob connects to you, send him some parameters: '))
+
+    g = int(A['g'][2:], 16)
+    p = int(A['p'][2:], 16)
+    print(e := random.getrandbits(192*8))
+    g2 = g
+    #p2 = p
+    p2 = gen_weak_prime()
+    E = pow(g2, e, p2)
+    json_send(r, {'p': hex(p2), 'g': hex(g2), 'A': hex(E)})
+    print(r.recvuntil(b'Bob says to you: '))
+    print(B2 := json_recv(r))  # to samo B...
+    print(r.recvuntil(b'Bob says to you: '))
+    print(enc_b := json_recv(r))
+    ss_be = pow(int(B2['B'], 16), e, p2)
+    print(decrypt_flag(ss_be, enc_b['iv'], enc_b['encrypted']))
+    b = discrete_log(p2, int(B2['B'], 16), g2)
+
+    #b = (int(B2['B'], 16) - 1) // q
+    print(f'b {hex(b)}')
+    print(f'B1 {hex(pow(g, b, p))}')
+    print(f'B2 {hex(pow(g2, b, p2))}')
+    ss_ab = pow(int(A['A'][2:], 16), b, p)
+    try:
+        print(decrypt_flag(ss_ab, enc_a['iv'], enc_a['encrypted']))
+    except:
+        pass
+    print(r.recvall())
+
+
+def test11():
+    """
+    def generate_public_int(g, a, p):
+        return g ^ a % p
+
+
+    def generate_shared_secret(A, b, p):
+        return A ^ b % p
+
+    ^ to xor
+    """
+    iv = 'c044059ae57b61821a9090fbdefc63c5'
+    encrypted_flag = 'f60522a95bde87a9ff00dc2c3d99177019f625f3364188c1058183004506bf96541cf241dad1c0e92535564e537322d7'
+    p = 2410312426921032588552076022197566074856950548502459942654116941958108831682612228890093858261341614673227141477904012196503648957050582631942730706805009223062734745341073406696246014589361659774041027169249453200378729434170325843778659198143763193776859869524088940195577346119843545301547043747207749969763750084308926339295559968882457872412993810129130294592999947926365264059284647209730384947211681434464714438488520940127459844288859336526896320919633919
+    g = 2
+    A = 539556019868756019035615487062583764545019803793635712947528463889304486869497162061335997527971977050049337464152478479265992127749780103259420400564906895897077512359628760656227084039215210033374611483959802841868892445902197049235745933150328311259162433075155095844532813412268773066318780724878693701177217733659861396010057464019948199892231790191103752209797118863201066964703008895947360077614198735382678809731252084194135812256359294228383696551949882
+    B = 652888676809466256406904653886313023288609075262748718135045355786028783611182379919130347165201199876762400523413029908630805888567578414109983228590188758171259420566830374793540891937904402387134765200478072915215871011267065310188328883039327167068295517693269989835771255162641401501080811953709743259493453369152994501213224841052509818015422338794357540968552645357127943400146625902468838113443484208599332251406190345653880206706388377388164982846343351
+
+    a = A ^ g
+    ss = B ^ a
+    print(decrypt_flag(ss, iv, encrypted_flag))
+
+
+test11()
+
+"""
+Write-up
+
+(zadania prezentowałem dodatkowo 14.11, zgodnie z ustaleniami przesyłam teraz write-up, którego wówczas nie miałem)
+
+Static Client 2 (test 10)
+
+Bob zaczął sprawdzać, czy przesłana liczba p jest pierwsza.
+Należy przygotować liczbę pierwszą która pozwoli szybko rozwiązać problem DLOG.
+Algorytm Pohlinga-Hellmana:
+https://pl.wikipedia.org/wiki/Redukcja_Pohliga-Hellmana
+
+Dla liczby pierwszej p liczba p-1 musi być k-gładka, z małym k.
+
+Przygotowano generator takich liczb (funkcja gen_weak_prime):
+- losuje liczbę z liczb pierwszych z przedziału (1, 100)
+- liczy jej iloczyn z 1 lub dotychczasowym iloczynem jeśli już istnieje
+- powtarza powyższe do otrzymania odpowiednio dużej liczby
+- sprawdza, czy 2 * iloczyn + 1 jest pierwszy
+- zwraca powyższe jeśli tak
+- powtarza wszystkie kroki jeśli nie
+
+Generator dość szybko zwraca liczbę odpowiedniej wielkości
+(przyjęto próg 11**500 - tak jak wypraktykowano w zad. 10).
+
+Dla takiej liczby pierwszej można dość szybko (kilka sekund) otrzymać klucz prywatny Boba
+(znając swój prywatny i jego publiczny z bezpośredniej wymiany).
+
+Znając klucz prywatny Boba i publiczny Alice można obliczyć ich współdzielony sekret.
+
+Znając ich sekret można odszyfrować podsłuchaną wiadomość.
+"""

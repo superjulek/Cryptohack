@@ -1,0 +1,15 @@
+"Transparency":
+
+1. Zeskanowałem subdomeny cryptohack.org na stronie https://subdomains.whoisxmlapi.com/
+2. Jedna z subdomen nazywa się https://thetransparencyflagishere.cryptohack.org/ i tam znalazłem flagę
+3. Dla upewnienia się, że to poprawna strona (sugerując się przykładowymi rozwiązaniami) użyłem strony https://search.censys.io/ do sprawdzenia certyfikatów
+4. Obliczyłem fingerpint klucza poleceniem: openssl rsa -in transparency.pem -inform pem -pubin -outform der | sha256sum
+5. Otrzymałem:
+
+$ openssl rsa -in transparency.pem -in
+form pem -pubin -outform der | sha256sum
+writing RSA key
+29ab37df0a4e4d252f0cf12ad854bede59038fdd9cd652cbc5c222edd26d77d2  -
+
+6. Zweryfikowałem z użyciem wspomnianej strony, czy klucz pasuje do certyifkatu domeny:
+https://search.censys.io/certificates?q=parsed.subject_key_info.fingerprint_sha256%3A+29ab37df0a4e4d252f0cf12ad854bede59038fdd9cd652cbc5c222edd26d77d2

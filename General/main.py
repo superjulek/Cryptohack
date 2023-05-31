@@ -97,19 +97,10 @@ def test9():
 
 
 def test10():
-    import cv2
-
-    # Read two images. The size of both images must be the same.
-    img1 = cv2.imread('lemur.png')
-    img2 = cv2.imread('flag.png')
-
-    # compute bitwise XOR on both images
-    xor_img = cv2.bitwise_xor(img1, img2)
-
-    # display the computed bitwise XOR image
-    cv2.imshow('Bitwise XOR Image', xor_img)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    """
+    https://www.diffchecker.com/image-diff/
+    """
+    pass
 
 
 def test11():
@@ -164,9 +155,88 @@ def test13():
     print(8146798528947 % 17)
 
 
+def test14():
+    print(pow(273246787654, 65536, 65537))
+
+
+def test15():
+    """"
+    Note: i
+    'll use math notation, so a^b means pow(a,b)
+    a ^ (p - 1) = 1(mod
+    p)
+    a ^ (p - 1) * a ^ -1 = a ^ -1(mod
+    p)
+    a ^ (p - 2) * a * a ^ -1 = a ^ -1(mod
+    p)
+    a ^ (p - 2) * 1 = a ^ -1(mod
+    p)
+    So finally we
+    have:
+    a ^ (p - 2) = a ^ -1(mod
+    p)
+    """
+    print(pow(3, 13-2, 13))
+
+
+def test16():
+    """
+    openssl rsa -in privacy_enhanced_mail.pem -text  -noout
+    openssl asn1parse -in privacy_enhanced_mail.pem
+    """
+    pass
+
+
+def test17():
+    """
+     openssl x509 -in 2048b-rsa-example-cert.der -inform der -noout -modulus
+    """
+    pass
+
+
+def test18():
+    """
+    ssh-keygen -f /tmp/bruce_rsa.pub -e -m pem > bruce_rsa.pem
+    openssl rsa -in bruce_rsa.pem -pubin --RSAPublicKey_in -text -noout
+    """
+    pass
+
+
+def test19():
+    """
+    openssl rsa -in transparency.pem -inform pem -pubin -outform der | sha256sum
+    https://subdomains.whoisxmlapi.com/
+    https://search.censys.io/certificates?q=parsed.subject_key_info.fingerprint_sha256%3A+29ab37df0a4e4d252f0cf12ad854bede59038fdd9cd652cbc5c222edd26d77d2
+    parsed.subject_key_info.fingerprint_sha256: 29ab37df0a4e4d252f0cf12ad854bede59038fdd9cd652cbc5c222edd26d77d2
+    """
+    pass
+
+
 def main():
-    test13()
+    test19()
 
 
 if __name__ == '__main__':
     main()
+
+
+"""
+Write-up:
+
+"Transparency":
+
+1. Zeskanowałem subdomeny cryptohack.org na stronie https://subdomains.whoisxmlapi.com/
+2. Jedna z subdomen nazywa się https://thetransparencyflagishere.cryptohack.org/ i tam znalazłem flagę
+3. Dla upewnienia się, że to poprawna strona (sugerując się przykładowymi rozwiązaniami) użyłem strony https://search.censys.io/ do sprawdzenia certyfikatów
+4. Obliczyłem fingerpint klucza poleceniem: openssl rsa -in transparency.pem -inform pem -pubin -outform der | sha256sum
+5. Otrzymałem:
+
+$ openssl rsa -in transparency.pem -in
+form pem -pubin -outform der | sha256sum
+writing RSA key
+29ab37df0a4e4d252f0cf12ad854bede59038fdd9cd652cbc5c222edd26d77d2  -
+
+6. Zweryfikowałem z użyciem wspomnianej strony, czy klucz pasuje do certyifkatu domeny:
+https://search.censys.io/certificates?q=parsed.subject_key_info.fingerprint_sha256%3A+29ab37df0a4e4d252f0cf12ad854bede59038fdd9cd652cbc5c222edd26d77d2
+
+"""
